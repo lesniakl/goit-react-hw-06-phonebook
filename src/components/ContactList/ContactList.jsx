@@ -1,44 +1,39 @@
 import Contact from 'components/Contact/Contact';
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
 import css from './ContactList.module.css';
+import { useSelector } from 'react-redux';
+import { getContacts, getFilter } from '../../redux/selectors';
 
-export default class ContactList extends Component {
-  render() {
-    return (
-      <ul className={css.contactList}>
-        {this.props.contacts.map(contact => {
-          if (!this.props.filter) {
-            return (
-              <Contact
-                key={contact.id}
-                name={contact.name}
-                number={contact.number}
-                onDelete={this.props.onDelete}
-              />
-            );
-          }
-          const filterLower = this.props.filter.toLowerCase();
-          const nameLower = contact.name.toLowerCase();
-          if (nameLower.includes(filterLower)) {
-            return (
-              <Contact
-                key={contact.id}
-                name={contact.name}
-                number={contact.number}
-                onDelete={this.props.onDelete}
-              />
-            );
-          }
-          return null;
+export default function ContactList() {
+  const contacts = useSelector(getContacts);
+  const filter = useSelector(getFilter);
+
+  const filterContacts = contactList => {
+    if (!filter) {
+      return contactList;
+    }
+    const filterLower = filter.toLowerCase();
+    return contactList.filter(contact => {
+      const nameLower = contact.name.toLowerCase();
+      return nameLower.includes(filterLower);
+    });
+  };
+
+  const filteredContacts = filterContacts(contacts);
+
+  return (
+    <ul className={css.contactList}>
+      {contacts.length > 0 &&
+        filteredContacts.map(contact => {
+          return (
+            <Contact
+              key={contact.id}
+              id={contact.id}
+              name={contact.name}
+              number={contact.number}
+            />
+          );
         })}
-      </ul>
-    );
-  }
+    </ul>
+  );
 }
-
-ContactList.propTypes = {
-  contacts: PropTypes.arrayOf(PropTypes.object),
-  filter: PropTypes.string,
-  onDelete: PropTypes.func.isRequired,
-};
